@@ -7,10 +7,14 @@
 
 /**
  * @brief Initializes system clock.
- * @params None
  * @retval None
  */
 void init_system_clock(void);
 
-#endif // SYSTEM_CLOCK_H
+/**
+ * @brief Delays system execution for x10 ms.
+ * @param x10ms Milliseconds to sleep (x10).
+ */
+void delay_x10ms(unsigned char x10ms);
 
+#endif // SYSTEM_CLOCK_H
