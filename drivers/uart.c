@@ -7,9 +7,9 @@
 #include "strings.h"
 
 
-volatile unsigned char tx_fifo[TX_FIFO_SIZE];
-volatile unsigned int tx_fifo_write_pointer;
-volatile unsigned int tx_fifo_read_pointer;
+volatile static unsigned char uart_tx_fifo[TX_FIFO_SIZE];
+volatile static unsigned int uart_tx_fifo_write_pointer;
+volatile static unsigned int uart_tx_fifo_read_pointer;
 
 static void init_usart1(void);
 static int send_byte(unsigned char byte);
@@ -19,13 +19,13 @@ static int tx_fifo_free_space(void);
 // High level functions:
 
 /**
- * @brief Sends byte via UART.
+ * @brief Initializes UART
  */
 void init_uart(void)
 {
     __disable_irq();
-    tx_fifo_write_pointer = 0;
-    tx_fifo_read_pointer = 0;
+    uart_tx_fifo_write_pointer = 0;
+    uart_tx_fifo_read_pointer = 0;
     __enable_irq();
     init_usart1();
 }
@@ -73,15 +73,15 @@ int send_number(unsigned short int ppm_value)
 static int send_byte(unsigned char byte)
 {
     __disable_irq();
-    if(tx_fifo_write_pointer >= TX_FIFO_SIZE)
+    if(uart_tx_fifo_write_pointer >= TX_FIFO_SIZE)
     {
         // Buffer overflow but not all bytes sent via UART:
         __enable_irq();
         return UART_ERROR_TX_FIFO_OVERFLOW;
     }
     
-    tx_fifo[tx_fifo_write_pointer] = byte;
-    tx_fifo_write_pointer++;
+    uart_tx_fifo[uart_tx_fifo_write_pointer] = byte;
+    uart_tx_fifo_write_pointer++;
     __enable_irq();
     return 0;
 }
@@ -94,7 +94,7 @@ static int send_byte(unsigned char byte)
 static int tx_fifo_free_space(void)
 {
     __disable_irq();
-    int result = TX_FIFO_SIZE - tx_fifo_write_pointer;
+    int result = TX_FIFO_SIZE - uart_tx_fifo_write_pointer;
     __enable_irq();
     return result;
 }
@@ -104,7 +104,6 @@ static int tx_fifo_free_space(void)
 
 /**
  * @brief Initializes USART1.
- * @params None
  * @retval None
  */
 static void init_usart1(void)
@@ -133,20 +132,19 @@ static void init_usart1(void)
 
 /**
  * @brief Low-level send byte method for USART1.
- * @params None
  * @retval None
  */
 void send_byte_usart1(void)
 {
-    if(tx_fifo_write_pointer > 0 &&
-       tx_fifo_read_pointer < tx_fifo_write_pointer)
+    if(uart_tx_fifo_write_pointer > 0 &&
+       uart_tx_fifo_read_pointer < uart_tx_fifo_write_pointer)
     {
-        USART1->DR = tx_fifo[tx_fifo_read_pointer];
-        tx_fifo_read_pointer++;
+        USART1->DR = uart_tx_fifo[uart_tx_fifo_read_pointer];
+        uart_tx_fifo_read_pointer++;
     }
-    else if(tx_fifo_read_pointer >= tx_fifo_write_pointer)
+    else if(uart_tx_fifo_read_pointer >= uart_tx_fifo_write_pointer)
     {
-        tx_fifo_read_pointer = 0;
-        tx_fifo_write_pointer = 0;
+        uart_tx_fifo_read_pointer = 0;
+        uart_tx_fifo_write_pointer = 0;
     }
 }

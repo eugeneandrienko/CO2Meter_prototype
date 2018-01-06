@@ -24,10 +24,12 @@ STM32_LIBSRC=./stm32_lib/system_stm32f10x.c ./stm32_lib/stm32f10x_it.c
 STM32_LIBSRC+=./stm32_lib/stm32f10x_rcc.c ./stm32_lib/stm32f10x_gpio.c
 SRC=main.c strings.c
 SRC+=./drivers/uart.c ./drivers/system_clock.c
+SRC+=./drivers/mhz19b.c
 
 OBJ=core_cm3.o system_stm32f10x.o stm32f10x_it.o startup_stm32f10x_md_vl.o
 OBJ+=stm32f10x_rcc.o stm32f10x_gpio.o
 OBJ+=main.o strings.o uart.o system_clock.o
+OBJ+=mhz19b.o
 
 all: ccmsis cstm32_lib cc ldall
 	$(SIZE) -B $(BIN).elf

@@ -9,14 +9,14 @@
 #include "stm32f10x.h"
 #include "drivers/system_clock.h"
 #include "drivers/uart.h"
+#include "drivers/mhz19b.h"
 
 
 /**
-   @brief  Enable clocking on various system peripheral devices
-   @params None
+   @brief  Enable clocking on various system peripheral devices.
    @retval None
 **/
-void RCC_init()
+void RCC_init(void)
 {
     /* enable clocking on Port C */
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
@@ -25,11 +25,14 @@ void RCC_init()
 /**
  * @brief Initializes system.
  */
-void init()
+void init(void)
 {
     __enable_irq();
+
     init_system_clock();
+
     init_uart();
+    init_mhz19b();
 }
 
 int main(void)
@@ -56,14 +59,31 @@ int main(void)
     /* Set pins 8 and 9 at PORTC to low level */
     GPIO_ResetBits(GPIOC, GPIO_Pin_8);
     GPIO_ResetBits(GPIOC, GPIO_Pin_9);
-
+    
     init();
-
+    
     while(1)
     {
-        if(send_number(1234) == UART_ERROR_TX_FIFO_OVERFLOW)
+        if(request_co2_concentration() != 0)
+        {
+            delay_x10ms(5);
+            continue;
+        }
+        
+        int result = 0;
+        result = read_co2_concentration();
+        
+        if((result == RESPONSE_WRONG_CHECKSUM) || (result == RESPONSE_WRONG_SENSOR_NO))
         {
             GPIO_SetBits(GPIOC, GPIO_Pin_9);
+            continue;
         }
+        if(result == RESPONSE_NOT_RECEIVED)
+        {
+            delay_x10ms(5);
+            continue;
+        }
+
+        send_number(result);
     }
 }

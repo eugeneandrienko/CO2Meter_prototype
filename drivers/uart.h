@@ -26,7 +26,6 @@ int send_number(unsigned short int ppm_value);
 
 /**
  * @brief Low-level send byte method for USART1.
- * @params None
  * @retval None
  */
 void send_byte_usart1(void);
