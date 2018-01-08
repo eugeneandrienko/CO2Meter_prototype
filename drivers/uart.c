@@ -137,7 +137,8 @@ static void init_usart1(void)
 void send_byte_usart1(void)
 {
     if(uart_tx_fifo_write_pointer > 0 &&
-       uart_tx_fifo_read_pointer < uart_tx_fifo_write_pointer)
+       uart_tx_fifo_read_pointer < uart_tx_fifo_write_pointer &&
+       (USART1->SR & USART_SR_TXE)) // Transmit register is empty
     {
         USART1->DR = uart_tx_fifo[uart_tx_fifo_read_pointer];
         uart_tx_fifo_read_pointer++;
