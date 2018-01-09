@@ -48,7 +48,7 @@ void init_mhz19b(void)
 
     detection_range(RANGE_5000);
     delay_x10ms(50);
-    abc_logic_state(0);
+    abc_logic_state(1);
     delay_x10ms(50);
 }
 
