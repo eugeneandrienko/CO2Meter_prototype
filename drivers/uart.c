@@ -14,6 +14,7 @@ volatile static unsigned int uart_tx_fifo_read_pointer;
 static void init_usart1(void);
 static int send_byte(unsigned char byte);
 static int tx_fifo_free_space(void);
+static void enable_txe_interrupt(void);
 
 
 // High level functions:
@@ -79,7 +80,8 @@ static int send_byte(unsigned char byte)
         __enable_irq();
         return UART_ERROR_TX_FIFO_OVERFLOW;
     }
-    
+
+    enable_txe_interrupt();
     uart_tx_fifo[uart_tx_fifo_write_pointer] = byte;
     uart_tx_fifo_write_pointer++;
     __enable_irq();
@@ -128,24 +130,31 @@ static void init_usart1(void)
     // 0.08333(3) * 16 = 1.33(3) = 0x1
     USART1->BRR = 0x341;
     USART1->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
+
+    NVIC_EnableIRQ(USART1_IRQn);
 }
 
-/**
- * @brief Low-level send byte method for USART1.
- * @retval None
- */
-void send_byte_usart1(void)
+static void enable_txe_interrupt(void)
 {
-    if(uart_tx_fifo_write_pointer > 0 &&
-       uart_tx_fifo_read_pointer < uart_tx_fifo_write_pointer &&
-       (USART1->SR & USART_SR_TXE)) // Transmit register is empty
+    USART1->CR1 |= USART_CR1_TXEIE;
+}
+
+void USART1_IRQHandler(void)
+{
+    if(USART1->SR & USART_SR_TXE)
     {
-        USART1->DR = uart_tx_fifo[uart_tx_fifo_read_pointer];
-        uart_tx_fifo_read_pointer++;
-    }
-    else if(uart_tx_fifo_read_pointer >= uart_tx_fifo_write_pointer)
-    {
-        uart_tx_fifo_read_pointer = 0;
-        uart_tx_fifo_write_pointer = 0;
+        if(uart_tx_fifo_write_pointer > 0 &&
+           uart_tx_fifo_read_pointer < uart_tx_fifo_write_pointer)
+        {
+            USART1->DR = uart_tx_fifo[uart_tx_fifo_read_pointer];
+            uart_tx_fifo_read_pointer++;
+            return;
+        }
+        else if(uart_tx_fifo_read_pointer >= uart_tx_fifo_write_pointer)
+        {
+            uart_tx_fifo_read_pointer = 0;
+            uart_tx_fifo_write_pointer = 0;
+        }
+        USART1->CR1 &= ~USART_CR1_TXEIE;
     }
 }

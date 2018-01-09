@@ -48,11 +48,10 @@ void delay_x10ms(unsigned char x10ms)
 }
 
 
-#define SYSTICK_USART 1
-#define SYSTICK_CO2_SENSOR 2
-#define SYSTICK_DISPLAY 3
+#define SYSTICK_CO2_SENSOR 1
+#define SYSTICK_DISPLAY 2
 
-static unsigned int systick_fsm_state = SYSTICK_USART;
+static unsigned int systick_fsm_state = SYSTICK_CO2_SENSOR;
 
 void SysTick_Handler(void)
 {
@@ -60,23 +59,19 @@ void SysTick_Handler(void)
     
     /* FSM description:
      *
-     * USART -> CO2_SENSOR -> DISPLAY
-     *   ^                       |
-     *   |_______________________|
+     * CO2_SENSOR -> DISPLAY
+     *   ^              |
+     *   |______________|
      */
     switch(systick_fsm_state)
     {
-    case SYSTICK_USART:
-        send_byte_usart1();
-        systick_fsm_state = SYSTICK_CO2_SENSOR;
-        break;
     case SYSTICK_CO2_SENSOR:
         systick_fsm_state = SYSTICK_DISPLAY;
         break;
     case SYSTICK_DISPLAY:
-        systick_fsm_state = SYSTICK_USART;
+        systick_fsm_state = SYSTICK_CO2_SENSOR;
         break;
     default:
-        systick_fsm_state = SYSTICK_USART;
+        systick_fsm_state = SYSTICK_CO2_SENSOR;
     }
 }
