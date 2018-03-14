@@ -1,3 +1,6 @@
+// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /**
  * @brief Driver for MH-Z19B CO2 sensor.
  */
@@ -239,6 +242,7 @@ static void init_usart2(void)
      * PA3 - USART_RX
      */
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_AFIOEN;
+    // Push-pull outputs:
     GPIOA->CRL &= ~GPIO_CRL_CNF2;
     GPIOA->CRL |= GPIO_CRL_CNF2_1;
     GPIOA->CRL |= GPIO_CRL_MODE2_0;

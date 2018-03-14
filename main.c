@@ -1,15 +1,19 @@
+// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /**
   @file    main.c
   @author  h0rr0rr_drag0n
   @version V0.0.1
   @date    22-Aug-2011
-  @brief   Template of Linux project for STM32VLDiscovery
+  @brief   Prototype for CO2Meter.
 **/
 
 #include "stm32f10x.h"
 #include "drivers/system_clock.h"
 #include "drivers/uart.h"
 #include "drivers/mhz19b.h"
+#include "drivers/display.h"
 
 
 /**
@@ -33,6 +37,7 @@ void init(void)
 
     init_uart();
     init_mhz19b();
+    init_display();
 }
 
 int main(void)
@@ -59,20 +64,22 @@ int main(void)
     /* Set pins 8 and 9 at PORTC to low level */
     GPIO_ResetBits(GPIOC, GPIO_Pin_8);
     GPIO_ResetBits(GPIOC, GPIO_Pin_9);
-    
+
     init();
-    
+
     while(1)
     {
+        display_send_number(8888);
+
         if(request_co2_concentration() != 0)
         {
             delay_x10ms(5);
             continue;
         }
-        
+
         int result = 0;
         result = read_co2_concentration();
-        
+
         if((result == RESPONSE_WRONG_CHECKSUM) || (result == RESPONSE_WRONG_SENSOR_NO))
         {
             GPIO_SetBits(GPIOC, GPIO_Pin_9);
@@ -87,3 +94,4 @@ int main(void)
         send_number(result);
     }
 }
+
