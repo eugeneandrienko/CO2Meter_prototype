@@ -4,6 +4,7 @@ include variables.mk
 all: ccmsis cstm32_lib $(SOURCES) $(OBJECTS) ldall static_analysis
 	make -C tests/
 	$(SIZE) -B $(BIN).elf
+	grep -r 'TODO' * | grep -v 'stlink/'
 
 ccmsis: $(CMSIS_SOURCES)
 	$(CC) $(CFLAGS) $(CMSIS_SOURCES)

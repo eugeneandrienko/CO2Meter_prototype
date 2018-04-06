@@ -69,8 +69,6 @@ int main(void)
 
     while(1)
     {
-        display_send_number(8888);
-
         if(request_co2_concentration() != 0)
         {
             delay_x10ms(5);
@@ -92,6 +90,8 @@ int main(void)
         }
 
         send_number(result);
+        display_send_number(result);
+
+        display_decrease_brightness();
     }
 }
-
